@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import WebSocket from "ws";
 
+export const dynamic = "force-dynamic";
+
 const GATEWAY_URL = process.env.CLAWDBOT_GATEWAY_URL || "ws://127.0.0.1:18789";
 const GATEWAY_TOKEN = process.env.CLAWDBOT_GATEWAY_TOKEN || "";
 

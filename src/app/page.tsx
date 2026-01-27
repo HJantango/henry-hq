@@ -10,6 +10,7 @@ import HenryStatus from "@/components/HenryStatus";
 import ActivityFeed from "@/components/ActivityFeed";
 import QuickAddTask from "@/components/QuickAddTask";
 import DailyPicks from "@/components/DailyPicks";
+import QuickLinks from "@/components/QuickLinks";
 
 export default function Dashboard() {
   const [time, setTime] = useState(formatAEST());
@@ -121,6 +122,7 @@ export default function Dashboard() {
         {/* Right sidebar */}
         <div className="space-y-4">
           <HenryStatus />
+          <QuickLinks />
           <WeatherWidget />
         </div>
       </div>

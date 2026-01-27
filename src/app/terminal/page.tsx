@@ -90,16 +90,30 @@ Henry has full context of your workspace, projects, and tools.`,
       }
 
       if (cmd === "status") {
-        addMessage({
-          id: `resp_${Date.now()}`,
-          type: "output",
-          content: `🟢 Henry is online via Clawdbot Gateway
-   Endpoint: ws://127.0.0.1:18789
+        // Fetch actual status from gateway
+        try {
+          const res = await fetch("/api/gateway/status");
+          const data = await res.json();
+          addMessage({
+            id: `resp_${Date.now()}`,
+            type: "output",
+            content: `${data.status === "online" ? "🟢" : "🔴"} Henry is ${data.status} via Clawdbot Gateway
+   Endpoint: ${data.gatewayUrl || "unknown"}
    Channel: webchat
-   Model: Claude (Anthropic)
+   Model: ${data.model || "Claude (Anthropic)"}
    Mode: Personal Assistant`,
-          timestamp: new Date().toISOString(),
-        });
+            timestamp: new Date().toISOString(),
+          });
+          setConnectionStatus(data.status === "online" ? "connected" : "error");
+        } catch {
+          addMessage({
+            id: `resp_${Date.now()}`,
+            type: "output",
+            content: `🔴 Could not reach gateway status endpoint`,
+            timestamp: new Date().toISOString(),
+          });
+          setConnectionStatus("error");
+        }
         return;
       }
 
