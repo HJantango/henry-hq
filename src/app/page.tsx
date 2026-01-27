@@ -1,101 +1,125 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+import { useEffect, useState } from "react";
+import { formatAEST } from "@/lib/utils";
+import { getProjects, getTasks, getActivities } from "@/lib/store";
+import { Project, Task, Activity } from "@/lib/types";
+import StatsCard from "@/components/StatsCard";
+import WeatherWidget from "@/components/WeatherWidget";
+import HenryStatus from "@/components/HenryStatus";
+import ActivityFeed from "@/components/ActivityFeed";
+import QuickAddTask from "@/components/QuickAddTask";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function Dashboard() {
+  const [time, setTime] = useState(formatAEST());
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setProjects(getProjects());
+    setTasks(getTasks());
+    setActivities(getActivities());
+
+    const timer = setInterval(() => setTime(formatAEST()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="text-center animate-fade-in">
+          <div className="text-5xl mb-4">🦉</div>
+          <p className="text-dark-300 text-sm">Loading Henry HQ...</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+    );
+  }
+
+  const activeProjects = projects.filter((p) => p.status === "active").length;
+  const pendingTasks = tasks.filter((t) => t.status !== "done").length;
+  const urgentTasks = tasks.filter((t) => t.priority === "urgent" && t.status !== "done").length;
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="animate-fade-in">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white">
+          {time.greeting} <span className="inline-block animate-fade-in">👋</span>
+        </h1>
+        <p className="text-dark-300 mt-2 text-sm">
+          {time.date} · <span className="text-dark-400">{time.time} AEST</span>
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard
+          label="Active Projects"
+          value={activeProjects}
+          trend={`${projects.length} total`}
+          color="accent"
+          delay={100}
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+            </svg>
+          }
+        />
+        <StatsCard
+          label="Pending Tasks"
+          value={pendingTasks}
+          trend={urgentTasks > 0 ? `${urgentTasks} urgent` : "All good"}
+          color={urgentTasks > 0 ? "orange" : "green"}
+          delay={200}
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          }
+        />
+        <StatsCard
+          label="This Week"
+          value={tasks.filter((t) => t.status === "done").length}
+          trend="tasks completed"
+          color="green"
+          delay={300}
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75Z" />
+            </svg>
+          }
+        />
+        <StatsCard
+          label="Deadlines"
+          value={tasks.filter((t) => t.dueDate && t.status !== "done").length}
+          trend="upcoming"
+          color="purple"
+          delay={400}
+          icon={
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+          }
+        />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Activity Feed - 2 cols */}
+        <div className="lg:col-span-2 space-y-4">
+          <ActivityFeed activities={activities} />
+          <QuickAddTask onAdd={() => setTasks(getTasks())} />
+        </div>
+
+        {/* Right sidebar */}
+        <div className="space-y-4">
+          <HenryStatus />
+          <WeatherWidget />
+        </div>
+      </div>
     </div>
   );
 }
