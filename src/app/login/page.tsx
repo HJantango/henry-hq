@@ -65,8 +65,8 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
-        router.push('/');
-        router.refresh();
+        // Hard redirect to ensure cookie is set before middleware checks
+        window.location.href = '/';
       } else {
         setShake(true);
         setTimeout(() => setShake(false), 500);
