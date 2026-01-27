@@ -50,7 +50,7 @@ function checkGateway(): Promise<Record<string, unknown>> {
             id: "henry-hq-status-check",
             version: "1.0.0",
             platform: "web",
-            mode: "operator",
+            mode: "chat",
           },
           role: "operator",
           scopes: ["operator.read"],

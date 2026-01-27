@@ -47,7 +47,7 @@ function fetchChatHistory(sessionKey: string, limit: number): Promise<unknown[]>
             id: "henry-hq-chat-history",
             version: "1.0.0",
             platform: "web",
-            mode: "operator",
+            mode: "chat",
           },
           role: "operator",
           scopes: ["operator.read"],

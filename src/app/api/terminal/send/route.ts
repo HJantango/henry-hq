@@ -56,7 +56,7 @@ function sendToGateway(message: string): Promise<string> {
             id: "henry-hq-terminal",
             version: "1.0.0",
             platform: "web",
-            mode: "operator",
+            mode: "chat",
           },
           role: "operator",
           scopes: ["operator.read", "operator.write"],
