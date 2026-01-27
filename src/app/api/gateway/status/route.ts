@@ -38,35 +38,38 @@ function checkGateway(): Promise<Record<string, unknown>> {
       reject(new Error("Gateway timeout"));
     }, 8000);
 
-    ws.on("open", () => {
-      ws.send(JSON.stringify({
-        type: "req",
-        id: connectId,
-        method: "connect",
-        params: {
-          minProtocol: 3,
-          maxProtocol: 3,
-          client: {
-            id: "henry-hq-status-check",
-            version: "1.0.0",
-            platform: "web",
-            mode: "chat",
-          },
-          role: "operator",
-          scopes: ["operator.read"],
-          caps: [],
-          commands: [],
-          permissions: {},
-          auth: { token: GATEWAY_TOKEN },
-          locale: "en-AU",
-          userAgent: "henry-hq-status-check/1.0.0",
-        },
-      }));
-    });
-
     ws.on("message", (data) => {
       try {
         const msg = JSON.parse(data.toString());
+
+        // Wait for challenge before sending connect
+        if (msg.type === "event" && msg.event === "connect.challenge") {
+          ws.send(JSON.stringify({
+            type: "req",
+            id: connectId,
+            method: "connect",
+            params: {
+              minProtocol: 3,
+              maxProtocol: 3,
+              client: {
+                id: "webchat",
+                version: "1.0.0",
+                platform: "web",
+                mode: "webchat",
+              },
+              role: "operator",
+              scopes: ["operator.read"],
+              caps: [],
+              commands: [],
+              permissions: {},
+              auth: { token: GATEWAY_TOKEN },
+              locale: "en-AU",
+              userAgent: "henry-hq-status/1.0.0",
+            },
+          }));
+          return;
+        }
+
         if (msg.type === "res" && msg.id === connectId) {
           clearTimeout(timeout);
           ws.close();

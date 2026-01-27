@@ -43,8 +43,7 @@ function sendToGateway(message: string): Promise<string> {
       }
     }, 60000); // 60s timeout
 
-    ws.on("open", () => {
-      // Send connect handshake
+    const sendConnect = () => {
       ws.send(JSON.stringify({
         type: "req",
         id: connectId,
@@ -53,10 +52,10 @@ function sendToGateway(message: string): Promise<string> {
           minProtocol: 3,
           maxProtocol: 3,
           client: {
-            id: "henry-hq-terminal",
+            id: "webchat",
             version: "1.0.0",
             platform: "web",
-            mode: "chat",
+            mode: "webchat",
           },
           role: "operator",
           scopes: ["operator.read", "operator.write"],
@@ -68,11 +67,20 @@ function sendToGateway(message: string): Promise<string> {
           userAgent: "henry-hq-terminal/1.0.0",
         },
       }));
-    });
+    };
+
+    // Don't send connect on open — wait for the challenge event first
+    // (handled in the message handler below)
 
     ws.on("message", (data) => {
       try {
         const msg = JSON.parse(data.toString());
+
+        // Handle connect challenge — gateway sends this before accepting connect
+        if (msg.type === "event" && msg.event === "connect.challenge") {
+          sendConnect();
+          return;
+        }
 
         // Handle connect response
         if (msg.type === "res" && msg.id === connectId) {
