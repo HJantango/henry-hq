@@ -9,6 +9,7 @@ import WeatherWidget from "@/components/WeatherWidget";
 import HenryStatus from "@/components/HenryStatus";
 import ActivityFeed from "@/components/ActivityFeed";
 import QuickAddTask from "@/components/QuickAddTask";
+import DailyPicks from "@/components/DailyPicks";
 
 export default function Dashboard() {
   const [time, setTime] = useState(formatAEST());
@@ -105,6 +106,9 @@ export default function Dashboard() {
           }
         />
       </div>
+
+      {/* Daily Picks - Full width, prominent */}
+      <DailyPicks />
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

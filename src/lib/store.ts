@@ -1,6 +1,6 @@
 "use client";
 
-import { Project, Task, Activity } from "./types";
+import { Project, Task, Activity, JournalEntry } from "./types";
 
 const PROJECTS_KEY = "henryhq_projects";
 const TASKS_KEY = "henryhq_tasks";
@@ -229,7 +229,14 @@ export function updateTask(id: string, updates: Partial<Task>): void {
   const tasks = getTasks();
   const idx = tasks.findIndex((t) => t.id === id);
   if (idx !== -1) {
-    tasks[idx] = { ...tasks[idx], ...updates };
+    const updatedTask = { ...tasks[idx], ...updates };
+    if (updates.status === "done" && !updatedTask.completedAt) {
+      updatedTask.completedAt = new Date().toISOString();
+    }
+    if (updates.status && updates.status !== "done") {
+      updatedTask.completedAt = undefined;
+    }
+    tasks[idx] = updatedTask;
     saveTasks(tasks);
     if (updates.status === "done") {
       addActivity({
@@ -237,6 +244,36 @@ export function updateTask(id: string, updates: Partial<Task>): void {
         message: `Completed: ${tasks[idx].title}`,
       });
     }
+  }
+}
+
+// Journal entries for projects
+export function addJournalEntry(projectId: string, content: string): void {
+  const projects = getProjects();
+  const idx = projects.findIndex((p) => p.id === projectId);
+  if (idx !== -1) {
+    const entry: JournalEntry = {
+      id: generateId(),
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    if (!projects[idx].journal) projects[idx].journal = [];
+    projects[idx].journal!.unshift(entry);
+    projects[idx].updatedAt = new Date().toISOString();
+    saveProjects(projects);
+    addActivity({
+      type: "note_added",
+      message: `Added note to ${projects[idx].name}`,
+    });
+  }
+}
+
+export function deleteJournalEntry(projectId: string, entryId: string): void {
+  const projects = getProjects();
+  const idx = projects.findIndex((p) => p.id === projectId);
+  if (idx !== -1 && projects[idx].journal) {
+    projects[idx].journal = projects[idx].journal!.filter((e) => e.id !== entryId);
+    saveProjects(projects);
   }
 }
 

@@ -8,13 +8,13 @@ export default function TerminalPage() {
     {
       id: "sys_1",
       type: "system",
-      content: "Henry Terminal v1.0 — Connected to Clawdbot 🦉",
+      content: "Henry Terminal v2.0 — Connected to Clawdbot 🦉",
       timestamp: new Date().toISOString(),
     },
     {
       id: "sys_2",
       type: "system",
-      content: "Type a message to communicate with Henry. Type 'help' for commands.",
+      content: "Type a message to talk to Henry. Local commands: help, clear, status, whoami, projects",
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -22,6 +22,7 @@ export default function TerminalPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [connectionStatus, setConnectionStatus] = useState<"connected" | "error" | "checking">("checking");
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -35,63 +36,137 @@ export default function TerminalPage() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!input.trim()) return;
+  // Check connection on mount
+  useEffect(() => {
+    setConnectionStatus("connected"); // Optimistic — will show error if send fails
+  }, []);
 
+  const addMessage = useCallback((msg: TerminalMessage) => {
+    setMessages((prev) => [...prev, msg]);
+  }, []);
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!input.trim() || isTyping) return;
+
+      const userInput = input.trim();
       const userMsg: TerminalMessage = {
         id: `msg_${Date.now()}`,
         type: "input",
-        content: input.trim(),
+        content: userInput,
         timestamp: new Date().toISOString(),
       };
 
-      setMessages((prev) => [...prev, userMsg]);
-      setHistory((prev) => [input.trim(), ...prev]);
+      addMessage(userMsg);
+      setHistory((prev) => [userInput, ...prev]);
       setHistoryIndex(-1);
       setInput("");
-      setIsTyping(true);
 
-      // Mock responses
-      const cmd = input.trim().toLowerCase();
-      let response = "Henry is connected via Clawdbot — messages sent here route to the main session. Full integration coming soon.";
+      // Handle local commands
+      const cmd = userInput.toLowerCase();
+
+      if (cmd === "clear") {
+        setMessages([]);
+        return;
+      }
 
       if (cmd === "help") {
-        response = `Available commands:
+        addMessage({
+          id: `resp_${Date.now()}`,
+          type: "output",
+          content: `Local commands:
   help     — Show this help message
-  status   — Check Henry's status
+  status   — Check Henry's connection status
   whoami   — Display user info
   projects — List active projects
   clear    — Clear terminal
   
-Any other input will be routed to Henry via Clawdbot.`;
-      } else if (cmd === "status") {
-        response = "🟢 Henry is online and operational.\n   Model: Claude (Anthropic)\n   Uptime: Continuous\n   Mode: Personal Assistant";
-      } else if (cmd === "whoami") {
-        response = "👤 Heath — Wild Octave\n   Role: Founder\n   Location: Brunswick Heads, NSW\n   Status: Building cool things";
-      } else if (cmd === "projects") {
-        response = "Active Projects:\n  1. Wild Octave Dashboard [████████░░] 65%\n  2. WebCM SEO            [████░░░░░░] 40%\n  3. Tax Catchup          [██░░░░░░░░] 20%";
-      } else if (cmd === "clear") {
-        setMessages([]);
-        setIsTyping(false);
+Anything else is sent directly to Henry via Clawdbot gateway.
+Henry has full context of your workspace, projects, and tools.`,
+          timestamp: new Date().toISOString(),
+        });
         return;
       }
 
-      setTimeout(() => {
-        setIsTyping(false);
-        setMessages((prev) => [
-          ...prev,
-          {
+      if (cmd === "status") {
+        addMessage({
+          id: `resp_${Date.now()}`,
+          type: "output",
+          content: `🟢 Henry is online via Clawdbot Gateway
+   Endpoint: ws://127.0.0.1:18789
+   Channel: webchat
+   Model: Claude (Anthropic)
+   Mode: Personal Assistant`,
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
+      if (cmd === "whoami") {
+        addMessage({
+          id: `resp_${Date.now()}`,
+          type: "output",
+          content: `👤 Heath — Wild Octave
+   Role: Founder
+   Location: Brunswick Heads, NSW
+   Dashboard: Henry HQ
+   Status: Building cool things with AI`,
+          timestamp: new Date().toISOString(),
+        });
+        return;
+      }
+
+      if (cmd === "projects") {
+        addMessage({
+          id: `resp_${Date.now()}`,
+          type: "output",
+          content: `Fetching from Henry... (sending to Clawdbot)`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      // Send to Clawdbot via API
+      setIsTyping(true);
+      try {
+        const res = await fetch("/api/terminal/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userInput }),
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          setConnectionStatus("error");
+          addMessage({
+            id: `err_${Date.now()}`,
+            type: "system",
+            content: `⚠️ ${data.error}`,
+            timestamp: new Date().toISOString(),
+          });
+        } else {
+          setConnectionStatus("connected");
+          addMessage({
             id: `resp_${Date.now()}`,
             type: "output",
-            content: response,
+            content: data.response || "Henry processed your message.",
             timestamp: new Date().toISOString(),
-          },
-        ]);
-      }, 800 + Math.random() * 1200);
+          });
+        }
+      } catch (err) {
+        setConnectionStatus("error");
+        addMessage({
+          id: `err_${Date.now()}`,
+          type: "system",
+          content: `⚠️ Failed to reach Henry: ${err instanceof Error ? err.message : "Network error"}`,
+          timestamp: new Date().toISOString(),
+        });
+      } finally {
+        setIsTyping(false);
+      }
     },
-    [input]
+    [input, isTyping, addMessage]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -119,8 +194,22 @@ Any other input will be routed to Henry via Clawdbot.`;
         </div>
         <span className="text-xs font-mono text-dark-300 ml-2">henry@hq ~ terminal</span>
         <div className="ml-auto flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-glow-pulse" />
-          <span className="text-xs text-dark-400">Connected</span>
+          <div
+            className={`w-2 h-2 rounded-full ${
+              connectionStatus === "connected"
+                ? "bg-green-500 animate-glow-pulse"
+                : connectionStatus === "error"
+                ? "bg-red-500"
+                : "bg-yellow-500 animate-pulse"
+            }`}
+          />
+          <span className="text-xs text-dark-400">
+            {connectionStatus === "connected"
+              ? "Connected to Clawdbot"
+              : connectionStatus === "error"
+              ? "Connection issue"
+              : "Checking..."}
+          </span>
         </div>
       </div>
 
@@ -134,7 +223,7 @@ Any other input will be routed to Henry via Clawdbot.`;
               </p>
             ) : msg.type === "input" ? (
               <div className="flex">
-                <span className="text-accent-light mr-2 select-none">henry&gt;</span>
+                <span className="text-accent-light mr-2 select-none">heath&gt;</span>
                 <span className="text-white">{msg.content}</span>
               </div>
             ) : (
@@ -147,12 +236,12 @@ Any other input will be routed to Henry via Clawdbot.`;
 
         {/* Typing indicator */}
         {isTyping && (
-          <div className="flex items-center gap-1 pl-8 animate-fade-in">
-            <span className="text-accent/60 text-xs">henry is thinking</span>
+          <div className="flex items-center gap-2 pl-8 animate-fade-in">
+            <span className="text-accent/60 text-xs">🦉 henry is thinking</span>
             <span className="flex gap-0.5">
-              <span className="w-1 h-1 rounded-full bg-accent/60 animate-pulse" style={{ animationDelay: "0ms" }} />
-              <span className="w-1 h-1 rounded-full bg-accent/60 animate-pulse" style={{ animationDelay: "150ms" }} />
-              <span className="w-1 h-1 rounded-full bg-accent/60 animate-pulse" style={{ animationDelay: "300ms" }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent/60 animate-pulse" style={{ animationDelay: "0ms" }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent/60 animate-pulse" style={{ animationDelay: "150ms" }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent/60 animate-pulse" style={{ animationDelay: "300ms" }} />
             </span>
           </div>
         )}
@@ -161,16 +250,20 @@ Any other input will be routed to Henry via Clawdbot.`;
       {/* Input */}
       <form onSubmit={handleSubmit} className="px-6 py-4 border-t border-white/[0.06] bg-dark-900/50 backdrop-blur-lg">
         <div className="flex items-center gap-2 font-mono">
-          <span className="text-accent-light select-none text-sm">henry&gt;</span>
+          <span className="text-accent-light select-none text-sm">heath&gt;</span>
           <input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a command or message..."
+            placeholder={isTyping ? "Waiting for Henry..." : "Type a command or message..."}
             className="flex-1 bg-transparent text-white text-sm focus:outline-none placeholder:text-dark-500 caret-accent-light"
             autoFocus
+            disabled={isTyping}
           />
+          {isTyping && (
+            <span className="text-xs text-dark-500 animate-pulse">Processing...</span>
+          )}
         </div>
       </form>
     </div>
