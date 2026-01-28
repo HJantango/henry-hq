@@ -6,6 +6,9 @@ export const dynamic = "force-dynamic";
 const GATEWAY_URL = process.env.CLAWDBOT_GATEWAY_URL || "ws://127.0.0.1:18789";
 const GATEWAY_TOKEN = process.env.CLAWDBOT_GATEWAY_TOKEN || "";
 
+// Debug: log token info on startup
+console.log(`[Gateway Config] URL: ${GATEWAY_URL}, Token: ${GATEWAY_TOKEN ? GATEWAY_TOKEN.slice(0, 6) + '...' + GATEWAY_TOKEN.slice(-4) : 'EMPTY'} (${GATEWAY_TOKEN.length} chars)`);
+
 function generateId(): string {
   return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 }
@@ -50,7 +53,7 @@ function fetchChatHistory(sessionKey: string, limit: number): Promise<unknown[]>
             mode: "webchat",
           },
           role: "operator",
-          scopes: ["operator.read"],
+          scopes: ["operator.read", "operator.admin"],
           caps: [],
           commands: [],
           permissions: {},
