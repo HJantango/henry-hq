@@ -35,7 +35,7 @@ function fetchChatHistory(sessionKey: string, limit: number): Promise<unknown[]>
       reject(new Error("Gateway timeout"));
     }, 15000);
 
-    ws.on("open", () => {
+    const sendConnect = () => {
       ws.send(JSON.stringify({
         type: "req",
         id: connectId,
@@ -44,10 +44,10 @@ function fetchChatHistory(sessionKey: string, limit: number): Promise<unknown[]>
           minProtocol: 3,
           maxProtocol: 3,
           client: {
-            id: "henry-hq-chat-history",
+            id: "webchat",
             version: "1.0.0",
             platform: "web",
-            mode: "chat",
+            mode: "webchat",
           },
           role: "operator",
           scopes: ["operator.read"],
@@ -59,19 +59,27 @@ function fetchChatHistory(sessionKey: string, limit: number): Promise<unknown[]>
           userAgent: "henry-hq-chat-history/1.0.0",
         },
       }));
-    });
+    };
+
+    // Don't send connect on open — wait for the challenge event first
 
     ws.on("message", (data) => {
       try {
         const msg = JSON.parse(data.toString());
+
+        // Handle connect challenge — gateway sends this before accepting connect
+        if (msg.type === "event" && msg.event === "connect.challenge") {
+          sendConnect();
+          return;
+        }
 
         if (msg.type === "res" && msg.id === connectId) {
           if (msg.ok) {
             ws.send(JSON.stringify({
               type: "req",
               id: historyId,
-              method: "chat.history",
-              params: { sessionKey, limit },
+              method: "sessions.history",
+              params: { sessionKey: `agent:main:${sessionKey}`, limit, includeTools: false },
             }));
           } else {
             clearTimeout(timeout);
@@ -87,7 +95,7 @@ function fetchChatHistory(sessionKey: string, limit: number): Promise<unknown[]>
             const messages = msg.payload?.messages || msg.payload?.history || msg.payload || [];
             resolve(Array.isArray(messages) ? messages : []);
           } else {
-            reject(new Error(msg.payload?.message || "chat.history failed"));
+            reject(new Error(msg.payload?.message || "sessions.history failed"));
           }
         }
       } catch {
