@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow login page and auth API
+  // Allow login page, auth API, and health check
   if (
     pathname === '/login' ||
     pathname.startsWith('/api/auth/') ||
+    pathname.startsWith('/api/health') ||
     pathname.startsWith('/_next/') ||
     pathname === '/favicon.ico'
   ) {
