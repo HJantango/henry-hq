@@ -41,13 +41,13 @@ function formatTimestamp(msg: ChatMessage): string {
   }
 }
 
-const SESSION_KEYS = ["webchat", "discord", "telegram", "sms"];
+const SESSION_KEYS = ["main", "webchat", "whatsapp"];
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeSession, setActiveSession] = useState("webchat");
+  const [activeSession, setActiveSession] = useState("main");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   const fetchHistory = useCallback(async (session: string) => {
