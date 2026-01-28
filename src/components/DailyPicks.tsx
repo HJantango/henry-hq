@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { addTask } from "@/lib/store";
 
 interface DailyPick {
   emoji: string;
@@ -29,6 +30,25 @@ export default function DailyPicks() {
   const [picks, setPicks] = useState<DailyPick[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [addedPicks, setAddedPicks] = useState<Set<number>>(new Set());
+
+  const handleAddToTasks = (pick: DailyPick, index: number) => {
+    addTask({
+      title: `${pick.emoji} ${pick.title}`,
+      description: pick.description,
+      priority: pick.category === "productivity" ? "high" : "medium",
+      status: "todo",
+    });
+    setAddedPicks(prev => new Set(prev).add(index));
+    // Reset after 2 seconds for visual feedback
+    setTimeout(() => {
+      setAddedPicks(prev => {
+        const next = new Set(prev);
+        next.delete(index);
+        return next;
+      });
+    }, 2000);
+  };
 
   const fetchPicks = async (refresh = false) => {
     try {
@@ -125,6 +145,27 @@ export default function DailyPicks() {
                   </div>
                   <p className="text-xs text-dark-300 leading-relaxed line-clamp-2">{pick.description}</p>
                 </div>
+                {/* Add to Tasks button */}
+                <button
+                  onClick={() => handleAddToTasks(pick, i)}
+                  disabled={addedPicks.has(i)}
+                  className={`self-center p-2 rounded-lg transition-all flex-shrink-0 ${
+                    addedPicks.has(i)
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : "opacity-0 group-hover:opacity-100 text-dark-400 hover:text-accent-light hover:bg-white/[0.06]"
+                  }`}
+                  title={addedPicks.has(i) ? "Added!" : "Add to tasks"}
+                >
+                  {addedPicks.has(i) ? (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  )}
+                </button>
               </div>
             );
           })}

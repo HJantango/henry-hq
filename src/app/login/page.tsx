@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, KeyboardEvent, ChangeEvent } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [digits, setDigits] = useState(['', '', '', '']);
@@ -9,7 +8,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const router = useRouter();
 
   useEffect(() => {
     inputRefs.current[0]?.focus();
