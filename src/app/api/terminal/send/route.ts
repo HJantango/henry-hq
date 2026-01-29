@@ -121,55 +121,42 @@ function sendToGateway(message: string): Promise<string> {
           }
         }
 
-        // Handle streamed chat events
+        // Handle streamed chat events (state: delta/final, message.content)
         if (msg.type === "event" && msg.event === "chat") {
           const payload = msg.payload;
-          if (payload) {
-            // Collect text content from assistant messages
-            if (payload.role === "assistant" && payload.content) {
-              if (typeof payload.content === "string") {
-                responseText += payload.content;
-              } else if (Array.isArray(payload.content)) {
-                for (const block of payload.content) {
-                  if (block.type === "text" && block.text) {
-                    responseText += block.text;
-                  }
+          if (payload?.state === "final" && payload?.message?.role === "assistant") {
+            // Final message - extract text from content blocks
+            const content = payload.message.content;
+            if (Array.isArray(content)) {
+              responseText = ""; // Reset to get final clean text
+              for (const block of content) {
+                if (block.type === "text" && block.text) {
+                  responseText += block.text;
                 }
               }
             }
-            // Check for completion
-            if (payload.type === "done" || payload.type === "complete" || payload.status === "done" || payload.done === true) {
-              clearTimeout(timeout);
-              ws.close();
-              resolve(responseText || "Henry processed your message.");
-            }
-            // Handle text delta streaming
-            if (payload.type === "text" || payload.type === "text_delta") {
-              if (payload.text) responseText += payload.text;
-            }
-            // Handle message_complete event
-            if (payload.type === "message_complete" || payload.type === "turn_complete") {
-              clearTimeout(timeout);
-              ws.close();
-              resolve(responseText || "Henry processed your message.");
-            }
+            clearTimeout(timeout);
+            ws.close();
+            resolve(responseText || "Henry processed your message.");
           }
         }
 
-        // Handle agent events for completion
+        // Handle agent events (stream: assistant with data.delta, lifecycle with phase: end)
         if (msg.type === "event" && msg.event === "agent") {
           const payload = msg.payload;
-          if (payload && (payload.type === "done" || payload.type === "complete" || payload.status === "done")) {
-            // Give a small delay to collect any final text
-            setTimeout(() => {
-              clearTimeout(timeout);
-              ws.close();
-              resolve(responseText || "Henry processed your message.");
-            }, 500);
-          }
-          // Collect text from agent text events
-          if (payload && payload.type === "text" && payload.text) {
-            responseText += payload.text;
+          if (payload) {
+            // Collect streaming text deltas
+            if (payload.stream === "assistant" && payload.data?.delta) {
+              responseText += payload.data.delta;
+            }
+            // End of response
+            if (payload.stream === "lifecycle" && payload.data?.phase === "end") {
+              setTimeout(() => {
+                clearTimeout(timeout);
+                ws.close();
+                resolve(responseText || "Henry processed your message.");
+              }, 100);
+            }
           }
         }
       } catch {
