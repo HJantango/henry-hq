@@ -1,55 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFileSync, readdirSync, statSync, existsSync } from "fs";
-import { join } from "path";
+import brainContent from "./content.json";
 
 export const dynamic = "force-dynamic";
-
-// Path to the second-brain folder - configurable via env, defaults to repo root
-const BRAIN_PATH = process.env.SECOND_BRAIN_PATH || join(process.cwd(), "second-brain");
 
 interface FileNode {
   name: string;
   path: string;
   type: "file" | "folder";
+  content?: string;
   children?: FileNode[];
   modifiedAt?: string;
 }
 
-function buildTree(dirPath: string, basePath: string = ""): FileNode[] {
-  if (!existsSync(dirPath)) return [];
-  
-  const items = readdirSync(dirPath);
-  const nodes: FileNode[] = [];
-  
-  for (const item of items) {
-    if (item.startsWith(".")) continue; // Skip hidden files
-    
-    const fullPath = join(dirPath, item);
-    const relativePath = join(basePath, item);
-    const stat = statSync(fullPath);
-    
-    if (stat.isDirectory()) {
-      nodes.push({
-        name: item,
-        path: relativePath,
-        type: "folder",
-        children: buildTree(fullPath, relativePath),
-      });
-    } else if (item.endsWith(".md")) {
-      nodes.push({
-        name: item.replace(".md", ""),
-        path: relativePath,
-        type: "file",
-        modifiedAt: stat.mtime.toISOString(),
-      });
+function findFile(tree: FileNode[], filePath: string): FileNode | null {
+  for (const node of tree) {
+    if (node.path === filePath) return node;
+    if (node.children) {
+      const found = findFile(node.children, filePath);
+      if (found) return found;
     }
   }
-  
-  // Sort: folders first, then alphabetically
-  return nodes.sort((a, b) => {
-    if (a.type !== b.type) return a.type === "folder" ? -1 : 1;
-    return a.name.localeCompare(b.name);
-  });
+  return null;
 }
 
 // GET - list files or read a specific file
@@ -59,30 +30,31 @@ export async function GET(req: NextRequest) {
   
   try {
     if (filePath) {
-      // Read specific file
-      const fullPath = join(BRAIN_PATH, filePath);
+      // Find specific file in bundled content
+      const file = findFile(brainContent.tree as FileNode[], filePath);
       
-      // Security: ensure path doesn't escape brain folder
-      if (!fullPath.startsWith(BRAIN_PATH)) {
-        return NextResponse.json({ error: "Invalid path" }, { status: 400 });
-      }
-      
-      if (!existsSync(fullPath)) {
+      if (!file || file.type !== "file") {
         return NextResponse.json({ error: "File not found" }, { status: 404 });
       }
       
-      const content = readFileSync(fullPath, "utf-8");
-      const stat = statSync(fullPath);
-      
       return NextResponse.json({
         path: filePath,
-        content,
-        modifiedAt: stat.mtime.toISOString(),
+        content: file.content,
+        modifiedAt: file.modifiedAt,
       });
     } else {
-      // Return folder tree
-      const tree = buildTree(BRAIN_PATH);
-      return NextResponse.json({ tree, basePath: BRAIN_PATH });
+      // Return folder tree (strip content to reduce payload)
+      const stripContent = (nodes: FileNode[]): FileNode[] => 
+        nodes.map(n => ({
+          ...n,
+          content: undefined,
+          children: n.children ? stripContent(n.children) : undefined,
+        }));
+      
+      return NextResponse.json({ 
+        tree: stripContent(brainContent.tree as FileNode[]),
+        bundled: true 
+      });
     }
   } catch (error) {
     console.error("Brain API error:", error);
