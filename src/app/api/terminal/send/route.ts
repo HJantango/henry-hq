@@ -92,9 +92,8 @@ function sendToGateway(message: string): Promise<string> {
               id: chatSendId,
               method: "chat.send",
               params: {
-                text: message,
+                message: message,
                 sessionKey: "webchat",
-                channel: "webchat",
                 idempotencyKey: generateId(),
               },
             }));
