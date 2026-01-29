@@ -4,8 +4,8 @@ import { join } from "path";
 
 export const dynamic = "force-dynamic";
 
-// Path to the second-brain folder - configurable via env
-const BRAIN_PATH = process.env.SECOND_BRAIN_PATH || "/home/ubuntu/clawd/second-brain";
+// Path to the second-brain folder - configurable via env, defaults to repo root
+const BRAIN_PATH = process.env.SECOND_BRAIN_PATH || join(process.cwd(), "second-brain");
 
 interface FileNode {
   name: string;
