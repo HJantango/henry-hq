@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getTasks, getProjects, updateTask, deleteTask, saveTasks } from "@/lib/store";
-import { Task, Project, SubTask } from "@/lib/types";
+import { useEffect, useState, useCallback } from "react";
+import { Task, TaskList, SubTask } from "@/lib/types";
 import { priorityColors, cn } from "@/lib/utils";
-import QuickAddTask from "@/components/QuickAddTask";
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
@@ -31,100 +29,159 @@ function formatDate(dateStr: string): string {
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [lists, setLists] = useState<TaskList[]>([]);
   const [mounted, setMounted] = useState(false);
-  const [filter, setFilter] = useState<{ priority: string; status: string; project: string; today: boolean }>({
-    priority: "all",
-    status: "all",
-    project: "all",
-    today: false,
-  });
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"work" | "personal">("work");
+  const [selectedList, setSelectedList] = useState<string | null>(null);
   const [expandedTask, setExpandedTask] = useState<string | null>(null);
   const [subtaskInput, setSubtaskInput] = useState<Record<string, string>>({});
   const [editingDueDate, setEditingDueDate] = useState<string | null>(null);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState<Task["priority"]>("medium");
+  const [showTodayOnly, setShowTodayOnly] = useState(false);
+
+  // Fetch data from server
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tasks");
+      const data = await res.json();
+      setTasks(data.tasks || []);
+      setLists(data.lists || []);
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Save tasks to server
+  const saveTasks = useCallback(async (newTasks: Task[]) => {
+    setTasks(newTasks);
+    try {
+      await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tasks: newTasks }),
+      });
+    } catch (err) {
+      console.error("Failed to save tasks:", err);
+    }
+  }, []);
 
   useEffect(() => {
     setMounted(true);
-    setTasks(getTasks());
-    setProjects(getProjects());
-  }, []);
-
-  const refresh = () => {
-    setTasks(getTasks());
-    setProjects(getProjects());
-  };
+    fetchData();
+  }, [fetchData]);
 
   const toggleDone = (id: string, currentStatus: string) => {
-    updateTask(id, { status: currentStatus === "done" ? "todo" : "done" });
-    refresh();
+    const updated = tasks.map((t) =>
+      t.id === id
+        ? {
+            ...t,
+            status: (currentStatus === "done" ? "todo" : "done") as Task["status"],
+            completedAt: currentStatus === "done" ? undefined : new Date().toISOString(),
+          }
+        : t
+    );
+    saveTasks(updated);
   };
 
   const handleDelete = (id: string) => {
-    deleteTask(id);
-    refresh();
+    saveTasks(tasks.filter((t) => t.id !== id));
   };
 
   const handleDueDateChange = (id: string, date: string) => {
-    updateTask(id, { dueDate: date ? new Date(date).toISOString() : undefined });
+    const updated = tasks.map((t) =>
+      t.id === id ? { ...t, dueDate: date ? new Date(date).toISOString() : undefined } : t
+    );
     setEditingDueDate(null);
-    refresh();
+    saveTasks(updated);
   };
 
   const addSubtask = (taskId: string) => {
     const title = subtaskInput[taskId]?.trim();
     if (!title) return;
-    const allTasks = getTasks();
-    const idx = allTasks.findIndex((t) => t.id === taskId);
-    if (idx !== -1) {
-      const newSub: SubTask = { id: generateId(), title, done: false, createdAt: new Date().toISOString() };
-      if (!allTasks[idx].subtasks) allTasks[idx].subtasks = [];
-      allTasks[idx].subtasks!.push(newSub);
-      saveTasks(allTasks);
-    }
+    const updated = tasks.map((t) => {
+      if (t.id === taskId) {
+        const newSub: SubTask = { id: generateId(), title, done: false, createdAt: new Date().toISOString() };
+        return { ...t, subtasks: [...(t.subtasks || []), newSub] };
+      }
+      return t;
+    });
     setSubtaskInput((prev) => ({ ...prev, [taskId]: "" }));
-    refresh();
+    saveTasks(updated);
   };
 
   const toggleSubtask = (taskId: string, subId: string) => {
-    const allTasks = getTasks();
-    const idx = allTasks.findIndex((t) => t.id === taskId);
-    if (idx !== -1 && allTasks[idx].subtasks) {
-      const sIdx = allTasks[idx].subtasks!.findIndex((s) => s.id === subId);
-      if (sIdx !== -1) {
-        allTasks[idx].subtasks![sIdx].done = !allTasks[idx].subtasks![sIdx].done;
-        saveTasks(allTasks);
+    const updated = tasks.map((t) => {
+      if (t.id === taskId && t.subtasks) {
+        return {
+          ...t,
+          subtasks: t.subtasks.map((s) => (s.id === subId ? { ...s, done: !s.done } : s)),
+        };
       }
-    }
-    refresh();
+      return t;
+    });
+    saveTasks(updated);
   };
 
   const deleteSubtask = (taskId: string, subId: string) => {
-    const allTasks = getTasks();
-    const idx = allTasks.findIndex((t) => t.id === taskId);
-    if (idx !== -1 && allTasks[idx].subtasks) {
-      allTasks[idx].subtasks = allTasks[idx].subtasks!.filter((s) => s.id !== subId);
-      saveTasks(allTasks);
-    }
-    refresh();
+    const updated = tasks.map((t) => {
+      if (t.id === taskId && t.subtasks) {
+        return { ...t, subtasks: t.subtasks.filter((s) => s.id !== subId) };
+      }
+      return t;
+    });
+    saveTasks(updated);
   };
 
-  if (!mounted) return null;
+  const addTask = () => {
+    if (!newTaskTitle.trim()) return;
+    const listId = selectedList || lists.find((l) => l.type === activeTab)?.id;
+    const newTask: Task = {
+      id: generateId(),
+      title: newTaskTitle.trim(),
+      priority: newTaskPriority,
+      status: "todo",
+      listId,
+      createdAt: new Date().toISOString(),
+      order: tasks.length,
+    };
+    saveTasks([...tasks, newTask]);
+    setNewTaskTitle("");
+    setNewTaskPriority("medium");
+  };
 
-  let filtered = [...tasks];
-  if (filter.priority !== "all") filtered = filtered.filter((t) => t.priority === filter.priority);
-  if (filter.status !== "all") filtered = filtered.filter((t) => t.status === filter.status);
-  if (filter.project !== "all") filtered = filtered.filter((t) => t.projectId === filter.project);
-  if (filter.today) filtered = filtered.filter((t) => isToday(t.dueDate));
+  if (!mounted || loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-pulse text-dark-400">Loading tasks...</div>
+      </div>
+    );
+  }
 
-  // Sort: undone first, then by priority weight
+  // Filter lists by active tab
+  const filteredLists = lists.filter((l) => l.type === activeTab);
+  
+  // Filter tasks
+  const filteredTasks = tasks.filter((t) => {
+    const list = lists.find((l) => l.id === t.listId);
+    if (!list) return activeTab === "work"; // Unassigned tasks go to work
+    if (list.type !== activeTab) return false;
+    if (selectedList && t.listId !== selectedList) return false;
+    if (showTodayOnly && !isToday(t.dueDate)) return false;
+    return true;
+  });
+
+  // Sort: undone first, then by priority
   const priorityWeight = { urgent: 0, high: 1, medium: 2, low: 3 };
-  filtered.sort((a, b) => {
+  filteredTasks.sort((a, b) => {
     if (a.status === "done" && b.status !== "done") return 1;
     if (a.status !== "done" && b.status === "done") return -1;
     return priorityWeight[a.priority] - priorityWeight[b.priority];
   });
 
-  const projectMap = Object.fromEntries(projects.map((p) => [p.id, p.name]));
   const stats = {
     total: tasks.length,
     done: tasks.filter((t) => t.status === "done").length,
@@ -133,8 +190,11 @@ export default function TasksPage() {
     overdue: tasks.filter((t) => isOverdue(t.dueDate) && t.status !== "done").length,
   };
 
+  const listMap = Object.fromEntries(lists.map((l) => [l.id, l]));
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-white">Tasks</h1>
         <p className="text-dark-300 text-sm mt-1">
@@ -145,66 +205,133 @@ export default function TasksPage() {
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      {/* Work/Personal Tabs */}
+      <div className="flex gap-2">
         <button
-          onClick={() => setFilter({ ...filter, today: !filter.today })}
+          onClick={() => { setActiveTab("work"); setSelectedList(null); }}
+          className={cn(
+            "px-4 py-2 rounded-xl text-sm font-medium transition-all",
+            activeTab === "work"
+              ? "bg-accent/20 text-accent-light border border-accent/30"
+              : "bg-dark-800/50 text-dark-300 border border-white/[0.08] hover:border-accent/20"
+          )}
+        >
+          💼 Work
+        </button>
+        <button
+          onClick={() => { setActiveTab("personal"); setSelectedList(null); }}
+          className={cn(
+            "px-4 py-2 rounded-xl text-sm font-medium transition-all",
+            activeTab === "personal"
+              ? "bg-accent/20 text-accent-light border border-accent/30"
+              : "bg-dark-800/50 text-dark-300 border border-white/[0.08] hover:border-accent/20"
+          )}
+        >
+          🏠 Personal
+        </button>
+        <div className="flex-1" />
+        <button
+          onClick={() => setShowTodayOnly(!showTodayOnly)}
           className={cn(
             "px-3 py-2 rounded-xl text-xs font-medium border transition-all",
-            filter.today
+            showTodayOnly
               ? "bg-accent/20 text-accent-light border-accent/30"
               : "bg-dark-800/50 text-dark-200 border-white/[0.08] hover:border-accent/30"
           )}
         >
           📅 Today ({stats.todayCount})
         </button>
-        <select
-          value={filter.status}
-          onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-          className="bg-dark-800/50 border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-dark-200 focus:outline-none focus:border-accent/40"
+      </div>
+
+      {/* List Pills */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setSelectedList(null)}
+          className={cn(
+            "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+            !selectedList
+              ? "bg-white/10 text-white"
+              : "bg-dark-800/30 text-dark-400 hover:text-dark-200"
+          )}
         >
-          <option value="all">All Status</option>
-          <option value="todo">To Do</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
+          All
+        </button>
+        {filteredLists.map((list) => (
+          <button
+            key={list.id}
+            onClick={() => setSelectedList(list.id === selectedList ? null : list.id)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5",
+              selectedList === list.id
+                ? "text-white"
+                : "bg-dark-800/30 text-dark-400 hover:text-dark-200"
+            )}
+            style={selectedList === list.id ? { backgroundColor: `${list.color}30` } : {}}
+          >
+            <span>{list.icon}</span>
+            <span>{list.name}</span>
+            <span className="text-dark-500">
+              ({tasks.filter((t) => t.listId === list.id && t.status !== "done").length})
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Quick Add */}
+      <div className="glass p-4 flex gap-3">
+        <input
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && addTask()}
+          placeholder="Add a task..."
+          className="flex-1 bg-dark-900/50 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-dark-500 focus:outline-none focus:border-accent/30"
+        />
+        <select
+          value={newTaskPriority}
+          onChange={(e) => setNewTaskPriority(e.target.value as Task["priority"])}
+          className="bg-dark-900/50 border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-dark-200 focus:outline-none focus:border-accent/30"
+        >
+          <option value="urgent">🔴 Urgent</option>
+          <option value="high">🟠 High</option>
+          <option value="medium">🟡 Medium</option>
+          <option value="low">🟢 Low</option>
         </select>
         <select
-          value={filter.priority}
-          onChange={(e) => setFilter({ ...filter, priority: e.target.value })}
-          className="bg-dark-800/50 border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-dark-200 focus:outline-none focus:border-accent/40"
+          value={selectedList || ""}
+          onChange={(e) => setSelectedList(e.target.value || null)}
+          className="bg-dark-900/50 border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-dark-200 focus:outline-none focus:border-accent/30"
         >
-          <option value="all">All Priority</option>
-          <option value="urgent">Urgent</option>
-          <option value="high">High</option>
-          <option value="medium">Medium</option>
-          <option value="low">Low</option>
-        </select>
-        <select
-          value={filter.project}
-          onChange={(e) => setFilter({ ...filter, project: e.target.value })}
-          className="bg-dark-800/50 border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-dark-200 focus:outline-none focus:border-accent/40"
-        >
-          <option value="all">All Projects</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
+          <option value="">Select list...</option>
+          {filteredLists.map((list) => (
+            <option key={list.id} value={list.id}>
+              {list.icon} {list.name}
+            </option>
           ))}
         </select>
+        <button
+          onClick={addTask}
+          disabled={!newTaskTitle.trim()}
+          className="px-4 py-2 bg-accent/20 text-accent-light rounded-xl text-sm font-medium hover:bg-accent/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Add
+        </button>
       </div>
 
       {/* Task List */}
       <div className="space-y-2">
-        {filtered.map((task, i) => {
+        {filteredTasks.map((task, i) => {
           const isExpanded = expandedTask === task.id;
           const subtaskCount = task.subtasks?.length || 0;
           const subtaskDone = task.subtasks?.filter((s) => s.done).length || 0;
           const taskOverdue = isOverdue(task.dueDate) && task.status !== "done";
           const taskToday = isToday(task.dueDate);
+          const list = task.listId ? listMap[task.listId] : null;
 
           return (
             <div
               key={task.id}
               className="animate-slide-up"
-              style={{ animationDelay: `${i * 50}ms`, animationFillMode: "both" }}
+              style={{ animationDelay: `${i * 30}ms`, animationFillMode: "both" }}
             >
               <div
                 className={cn(
@@ -230,6 +357,15 @@ export default function TasksPage() {
                   )}
                 </button>
 
+                {/* List indicator */}
+                {list && (
+                  <span
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: list.color }}
+                    title={list.name}
+                  />
+                )}
+
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -246,8 +382,8 @@ export default function TasksPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    {task.projectId && projectMap[task.projectId] && (
-                      <span className="text-xs text-dark-400">{projectMap[task.projectId]}</span>
+                    {list && (
+                      <span className="text-xs text-dark-400">{list.icon} {list.name}</span>
                     )}
                     {task.dueDate && (
                       <span className={cn(
@@ -315,7 +451,6 @@ export default function TasksPage() {
               {/* Subtasks (expanded) */}
               {isExpanded && (
                 <div className="ml-9 mt-1 mb-2 space-y-1.5 animate-fade-in">
-                  {/* Existing subtasks */}
                   {(task.subtasks || []).map((sub) => (
                     <div key={sub.id} className="flex items-center gap-2 p-2 rounded-lg bg-dark-800/30 group/sub">
                       <button
@@ -372,17 +507,14 @@ export default function TasksPage() {
           );
         })}
 
-        {filtered.length === 0 && (
+        {filteredTasks.length === 0 && (
           <div className="text-center py-12">
             <p className="text-dark-400 text-sm">
-              {filter.today ? "Nothing due today — nice! 🎉" : "No tasks match your filters"}
+              {showTodayOnly ? "Nothing due today — nice! 🎉" : "No tasks yet. Add one above!"}
             </p>
           </div>
         )}
       </div>
-
-      {/* Quick Add */}
-      <QuickAddTask onAdd={refresh} />
     </div>
   );
 }

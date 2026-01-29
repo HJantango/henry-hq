@@ -19,12 +19,24 @@ export interface JournalEntry {
   createdAt: string;
 }
 
+// New: Task Lists for organizing tasks
+export interface TaskList {
+  id: string;
+  name: string;
+  type: "work" | "personal";
+  icon: string;
+  color: string;
+  order: number;
+  createdAt: string;
+}
+
 export interface Task {
   id: string;
   title: string;
   description?: string;
   priority: "urgent" | "high" | "medium" | "low";
   status: "todo" | "in-progress" | "done";
+  listId?: string;        // Links to TaskList
   projectId?: string;
   dueDate?: string;
   parentId?: string;
