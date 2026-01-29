@@ -34,4 +34,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-data/*.json
+# data/*.json - now tracking task data for persistence
