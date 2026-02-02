@@ -41,7 +41,7 @@ function sendToGateway(message: string): Promise<string> {
       } else {
         reject(new Error("Gateway timeout — Henry may be busy. Try again in a moment."));
       }
-    }, 60000); // 60s timeout
+    }, 180000); // 3min timeout (Opus can be slow)
 
     const sendConnect = () => {
       ws.send(JSON.stringify({
