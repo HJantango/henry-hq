@@ -125,11 +125,11 @@ export default function Sidebar() {
         <div className="p-6 border-b border-white/[0.06]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-blue-700 flex items-center justify-center text-lg">
-              🦉
+              🦝
             </div>
             <div>
-              <h1 className="font-semibold text-white text-lg tracking-tight">Henry HQ</h1>
-              <p className="text-xs text-dark-300">Personal Command Center</p>
+              <h1 className="font-semibold text-white text-lg tracking-tight">HenryII HQ</h1>
+              <p className="text-xs text-dark-300">Chaotic Co-Pilot Command Center</p>
             </div>
           </div>
         </div>

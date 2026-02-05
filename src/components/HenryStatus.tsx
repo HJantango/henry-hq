@@ -49,19 +49,19 @@ export default function HenryStatus() {
       style={{ animationDelay: "300ms", animationFillMode: "both" }}
     >
       <p className="text-xs font-medium text-dark-300 uppercase tracking-wider mb-3">
-        Henry Status
+        HenryII Status
       </p>
       <div className="flex items-center gap-3">
         <div className="relative">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-blue-700 flex items-center justify-center text-lg">
-            🦉
+            🦝
           </div>
           <div
             className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ${config.color} border-2 border-dark-800 ${config.glow} shadow-lg`}
           />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white">Henry</p>
+          <p className="text-sm font-medium text-white">HenryII</p>
           <div className="flex items-center gap-1.5">
             <div className={`w-1.5 h-1.5 rounded-full ${config.color} ${state === "checking" ? "animate-pulse" : ""}`} />
             <p className="text-xs text-dark-300">{config.text}</p>

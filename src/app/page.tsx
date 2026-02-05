@@ -33,8 +33,8 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center h-[80vh]">
         <div className="text-center animate-fade-in">
-          <div className="text-5xl mb-4">🦉</div>
-          <p className="text-dark-300 text-sm">Loading Henry HQ...</p>
+          <div className="text-5xl mb-4">🦝</div>
+          <p className="text-dark-300 text-sm">Loading HenryII HQ...</p>
         </div>
       </div>
     );

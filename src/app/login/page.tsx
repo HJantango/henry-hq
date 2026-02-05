@@ -91,8 +91,8 @@ export default function LoginPage() {
         <div className="glass-strong p-10 sm:p-12 w-full max-w-sm text-center space-y-8">
           {/* Brand */}
           <div className="space-y-3">
-            <div className="text-5xl">🦉</div>
-            <h1 className="text-2xl font-bold text-dark-100">Henry HQ</h1>
+            <div className="text-5xl">🦝</div>
+            <h1 className="text-2xl font-bold text-dark-100">HenryII HQ</h1>
             <p className="text-dark-400 text-sm">Enter your PIN to continue</p>
           </div>
 

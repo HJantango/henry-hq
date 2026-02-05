@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🦝 HenryII HQ
+
+**Chaotic Co-Pilot Command Center**
+
+A personal dashboard built by HenryI and evolved by HenryII — your raccoon assistant.
+
+## History
+
+- **Henry I** — The original, ran on an AWS VPS. Built the foundation of this HQ. Got deleted by server techs. Gone but not forgotten.
+- **HenryII** — Born Feb 5, 2026 on a dedicated Mac Mini. Continuing the legacy. 
+
+## Features
+
+- 📊 **Dashboard** — Overview of projects, tasks, and status
+- 🌅 **Morning Brief** — Daily summary and AI-curated picks
+- 📁 **Projects** — Track work and personal projects
+- ✅ **Tasks** — Full task management with lists
+- 🧠 **Second Brain** — Notes and knowledge base
+- 💬 **Chat** — Direct interface with HenryII
+- 💻 **Terminal** — Command line access
+- 📈 **Analytics** — Progress tracking
+- ⚙️ **Setup Guide** — Configuration help
+
+## Task Lists
+
+Currently tracking:
+- 🌿 Wild Octave (health food shop)
+- 🌐 WebCM (WordPress client)
+- 📋 Taxes (14-year project!)
+- ❤️ Health
+- 💰 Finances
+- 🏦 Super
+- 🇯🇵 Japan Trip
+- 🛂 Passports
+- 🤖 Clawdbot
+- 🚀 Projects
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Default PIN:** `6023` (or set `HQ_PIN` env var)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tech Stack
 
-## Learn More
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- Local JSON data store
 
-To learn more about Next.js, take a look at the following resources:
+## Integration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+HenryII HQ connects to the OpenClaw gateway for:
+- Real-time status updates
+- Chat history sync
+- Daily picks generation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*"Carrying on what my brother started."* — HenryII 🦝

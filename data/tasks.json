@@ -7,7 +7,15 @@
   {"id": "tax_6", "listId": "list_taxes", "title": "ATO - link to MYgov account", "completed": true, "createdAt": "2026-01-29T08:16:00.000Z"},
   {"id": "tax_7", "listId": "list_taxes", "title": "Services Australia - update mygov login details", "completed": true, "createdAt": "2026-01-29T08:16:00.000Z"},
 
-  {"id": "clawdbot_1", "listId": "list_clawdbot", "title": "Mac Mini buy", "completed": false, "createdAt": "2026-01-29T08:16:00.000Z"},
+  {"id": "clawdbot_1", "listId": "list_clawdbot", "title": "Mac Mini buy", "completed": true, "createdAt": "2026-01-29T08:16:00.000Z"},
+  {"id": "clawdbot_2", "listId": "list_clawdbot", "title": "Setup OpenClaw + HenryII", "completed": true, "createdAt": "2026-02-05T10:00:00.000Z"},
+  {"id": "clawdbot_3", "listId": "list_clawdbot", "title": "Setup Telegram voice integration", "completed": true, "createdAt": "2026-02-05T10:00:00.000Z"},
+  {"id": "clawdbot_4", "listId": "list_clawdbot", "title": "Setup local whisper transcription", "completed": true, "createdAt": "2026-02-05T10:00:00.000Z"},
+  {"id": "clawdbot_5", "listId": "list_clawdbot", "title": "Connect GitHub repos", "completed": true, "createdAt": "2026-02-05T10:00:00.000Z"},
+  {"id": "clawdbot_6", "listId": "list_clawdbot", "title": "Resurrect HenryHQ as HenryII HQ", "completed": true, "createdAt": "2026-02-05T10:00:00.000Z"},
+  {"id": "clawdbot_7", "listId": "list_clawdbot", "title": "Setup Gmail integration", "completed": false, "createdAt": "2026-02-05T10:00:00.000Z"},
+  {"id": "clawdbot_8", "listId": "list_clawdbot", "title": "Setup Google Calendar integration", "completed": false, "createdAt": "2026-02-05T10:00:00.000Z"},
+  {"id": "clawdbot_9", "listId": "list_clawdbot", "title": "Setup Brave Search API", "completed": false, "createdAt": "2026-02-05T10:00:00.000Z"},
 
   {"id": "health_1", "listId": "list_health", "title": "Book doctor", "completed": false, "createdAt": "2026-01-29T08:16:00.000Z"},
   {"id": "health_2", "listId": "list_health", "title": "Start working out/exercise", "completed": false, "createdAt": "2026-01-29T08:16:00.000Z"},
