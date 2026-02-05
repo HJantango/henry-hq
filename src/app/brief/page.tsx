@@ -197,11 +197,11 @@ export default function MorningBriefPage() {
         )}
       </div>
 
-      {/* Henry's Suggestions */}
+      {/* HenryII's Suggestions */}
       <div className="glass p-6">
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl">🤖</span>
-          <h2 className="text-lg font-semibold text-white">Henry&apos;s Suggestions</h2>
+          <span className="text-2xl">🦝</span>
+          <h2 className="text-lg font-semibold text-white">HenryII&apos;s Suggestions</h2>
         </div>
         <div className="space-y-3 text-dark-200 text-sm">
           <p>
@@ -243,7 +243,7 @@ export default function MorningBriefPage() {
 
       {/* Footer */}
       <div className="text-center text-dark-500 text-xs py-4">
-        Morning brief auto-delivered daily at 8:00 AM AEDT via WhatsApp
+        🦝 Morning brief powered by HenryII · Telegram/Dashboard
       </div>
     </div>
   );
