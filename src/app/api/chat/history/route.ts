@@ -1,118 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
-import WebSocket from "ws";
 
 export const dynamic = "force-dynamic";
 
-const GATEWAY_URL = process.env.CLAWDBOT_GATEWAY_URL || "ws://127.0.0.1:18789";
+// HTTP endpoint (not WS) - tools/invoke API
+const GATEWAY_HTTP_URL = process.env.CLAWDBOT_GATEWAY_URL?.replace("ws://", "http://").replace("wss://", "https://") || "http://127.0.0.1:18789";
 const GATEWAY_TOKEN = process.env.CLAWDBOT_GATEWAY_TOKEN || "";
-
-// Debug: log token info on startup
-console.log(`[Gateway Config] URL: ${GATEWAY_URL}, Token: ${GATEWAY_TOKEN ? GATEWAY_TOKEN.slice(0, 6) + '...' + GATEWAY_TOKEN.slice(-4) : 'EMPTY'} (${GATEWAY_TOKEN.length} chars)`);
-
-function generateId(): string {
-  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-}
 
 export async function GET(req: NextRequest) {
   try {
-    const sessionKey = req.nextUrl.searchParams.get("sessionKey") || "webchat";
+    const sessionKey = req.nextUrl.searchParams.get("sessionKey") || "main";
     const limit = parseInt(req.nextUrl.searchParams.get("limit") || "100", 10);
 
-    const messages = await fetchChatHistory(sessionKey, limit);
+    // Use the tools/invoke HTTP endpoint to call sessions_history
+    const response = await fetch(`${GATEWAY_HTTP_URL}/tools/invoke`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GATEWAY_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tool: "sessions_history",
+        args: {
+          sessionKey: `agent:main:${sessionKey}`,
+          limit,
+          includeTools: false,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Gateway error:", response.status, text);
+      return NextResponse.json(
+        { error: `Gateway returned ${response.status}`, messages: [] },
+        { status: response.status }
+      );
+    }
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      return NextResponse.json(
+        { error: data.error?.message || "Failed to fetch history", messages: [] },
+        { status: 400 }
+      );
+    }
+
+    // Extract messages from result
+    const messages = data.result?.messages || [];
     return NextResponse.json({ messages, sessionKey });
   } catch (error: unknown) {
     console.error("Chat history error:", error);
     const errMsg = error instanceof Error ? error.message : "Failed to fetch chat history";
     return NextResponse.json({ error: errMsg, messages: [] }, { status: 500 });
   }
-}
-
-function fetchChatHistory(sessionKey: string, limit: number): Promise<unknown[]> {
-  return new Promise((resolve, reject) => {
-    const ws = new WebSocket(GATEWAY_URL);
-    const connectId = generateId();
-    const historyId = generateId();
-
-    const timeout = setTimeout(() => {
-      ws.close();
-      reject(new Error("Gateway timeout"));
-    }, 15000);
-
-    const sendConnect = () => {
-      ws.send(JSON.stringify({
-        type: "req",
-        id: connectId,
-        method: "connect",
-        params: {
-          minProtocol: 3,
-          maxProtocol: 3,
-          client: {
-            id: "webchat",
-            version: "1.0.0",
-            platform: "web",
-            mode: "webchat",
-          },
-          role: "operator",
-          scopes: ["operator.read", "operator.admin"],
-          caps: [],
-          commands: [],
-          permissions: {},
-          auth: { token: GATEWAY_TOKEN },
-          locale: "en-AU",
-          userAgent: "henry-hq-chat-history/1.0.0",
-        },
-      }));
-    };
-
-    // Don't send connect on open — wait for the challenge event first
-
-    ws.on("message", (data) => {
-      try {
-        const msg = JSON.parse(data.toString());
-
-        // Handle connect challenge — gateway sends this before accepting connect
-        if (msg.type === "event" && msg.event === "connect.challenge") {
-          sendConnect();
-          return;
-        }
-
-        if (msg.type === "res" && msg.id === connectId) {
-          if (msg.ok) {
-            ws.send(JSON.stringify({
-              type: "req",
-              id: historyId,
-              method: "sessions.history",
-              params: { sessionKey: `agent:main:${sessionKey}`, limit, includeTools: false },
-            }));
-          } else {
-            clearTimeout(timeout);
-            ws.close();
-            reject(new Error("Gateway auth failed"));
-          }
-        }
-
-        if (msg.type === "res" && msg.id === historyId) {
-          clearTimeout(timeout);
-          ws.close();
-          if (msg.ok) {
-            const messages = msg.payload?.messages || msg.payload?.history || msg.payload || [];
-            resolve(Array.isArray(messages) ? messages : []);
-          } else {
-            reject(new Error(msg.payload?.message || "sessions.history failed"));
-          }
-        }
-      } catch {
-        // Ignore parse errors
-      }
-    });
-
-    ws.on("error", (err) => {
-      clearTimeout(timeout);
-      reject(new Error(`Gateway connection failed: ${err.message}`));
-    });
-
-    ws.on("close", () => {
-      clearTimeout(timeout);
-    });
-  });
 }

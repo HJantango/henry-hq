@@ -59,10 +59,3 @@ export interface Activity {
   message: string;
   timestamp: string;
 }
-
-export interface TerminalMessage {
-  id: string;
-  type: "input" | "output" | "system";
-  content: string;
-  timestamp: string;
-}

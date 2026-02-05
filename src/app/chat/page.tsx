@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 
 interface ChatMessage {
@@ -104,12 +103,6 @@ export default function ChatPage() {
           >
             ↻ Refresh
           </button>
-          <Link
-            href="/terminal"
-            className="px-3 py-1.5 text-xs bg-accent/20 text-accent-light border border-accent/30 rounded-xl hover:bg-accent/30 transition-colors"
-          >
-            Open Terminal →
-          </Link>
         </div>
       </div>
 
@@ -157,9 +150,9 @@ export default function ChatPage() {
             <div className="text-center">
               <div className="text-4xl mb-3">📭</div>
               <p className="text-dark-400 text-sm">No messages in &ldquo;{activeSession}&rdquo; session</p>
-              <Link href="/terminal" className="text-accent-light text-xs mt-2 inline-block hover:underline">
-                Start a conversation →
-              </Link>
+              <p className="text-dark-500 text-xs mt-2">
+                Chat with HenryII via Telegram to see history here
+              </p>
             </div>
           </div>
         ) : (
@@ -220,7 +213,7 @@ export default function ChatPage() {
       {/* Footer hint */}
       <div className="text-center animate-fade-in" style={{ animationDelay: "300ms" }}>
         <p className="text-dark-500 text-xs">
-          This is a read-only log. <Link href="/terminal" className="text-accent-light hover:underline">Open Terminal</Link> to send messages.
+          Read-only conversation log. Chat with HenryII via Telegram.
           Auto-refreshes every 30 seconds.
         </p>
       </div>
