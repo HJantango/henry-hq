@@ -89,6 +89,33 @@ export default function MorningBriefPage() {
     if (c.includes("storm") || c.includes("thunder")) return "⛈️";
     return "🌤️";
   };
+  
+  // Pants or shorts logic
+  const getPantsOrShorts = () => {
+    if (!weather) return null;
+    const { high, low } = weather;
+    const midDay = (high + low) / 2;
+    
+    // Simple logic based on high/low
+    if (high < 20) {
+      return { emoji: "👖", text: "Pants Day", reason: "Cold one today — pants weather" };
+    }
+    if (low >= 20 && high >= 24) {
+      return { emoji: "🩳", text: "Shorts Day", reason: "Beautiful day — shorts all the way" };
+    }
+    if (low < 18 && high >= 24) {
+      return { emoji: "🩳", text: "Shorts Day", reason: "Chilly start, but she'll warm up" };
+    }
+    if (high >= 20 && high <= 24) {
+      return { emoji: "🩳", text: "Shorts Day", reason: "Mild day — shorts if you're game" };
+    }
+    if (high >= 22) {
+      return { emoji: "🩳", text: "Shorts Day", reason: "Arvo's warm enough — go the shorts" };
+    }
+    return { emoji: "👖", text: "Pants Day", reason: "Play it safe with pants today" };
+  };
+  
+  const legVerdict = getPantsOrShorts();
 
   return (
     <div className="space-y-8 max-w-3xl">
@@ -107,20 +134,31 @@ export default function MorningBriefPage() {
           <span className="text-dark-400 text-sm ml-auto">Brunswick Heads, NSW</span>
         </div>
         {weather ? (
-          <div className="flex items-center gap-6">
-            <div className="text-5xl">{getWeatherIcon(weather.condition)}</div>
-            <div>
-              <div className="text-4xl font-light text-white">{weather.temp}°C</div>
-              <div className="text-dark-300">{weather.condition}</div>
-            </div>
-            <div className="ml-auto text-right">
-              <div className="text-dark-300">
-                <span className="text-red-400">↑{weather.high}°</span>
-                <span className="mx-2">/</span>
-                <span className="text-blue-400">↓{weather.low}°</span>
+          <>
+            <div className="flex items-center gap-6">
+              <div className="text-5xl">{getWeatherIcon(weather.condition)}</div>
+              <div>
+                <div className="text-4xl font-light text-white">{weather.temp}°C</div>
+                <div className="text-dark-300">{weather.condition}</div>
+              </div>
+              <div className="ml-auto text-right">
+                <div className="text-dark-300">
+                  <span className="text-red-400">↑{weather.high}°</span>
+                  <span className="mx-2">/</span>
+                  <span className="text-blue-400">↓{weather.low}°</span>
+                </div>
               </div>
             </div>
-          </div>
+            {legVerdict && (
+              <div className="mt-4 pt-4 border-t border-dark-700/50 flex items-center gap-3">
+                <span className="text-2xl">{legVerdict.emoji}</span>
+                <div>
+                  <p className="text-sm font-medium text-white">{legVerdict.text}</p>
+                  <p className="text-xs text-dark-400">{legVerdict.reason}</p>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-dark-400 animate-pulse">Loading weather...</div>
         )}
