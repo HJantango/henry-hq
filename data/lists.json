@@ -1,7 +1,7 @@
 [
   { "id": "list_wo", "name": "Wild Octave", "type": "work", "icon": "🌿", "color": "#10b981", "order": 0, "createdAt": "2026-01-29T08:20:00.000Z" },
   { "id": "list_webcm", "name": "WebCM", "type": "work", "icon": "🌐", "color": "#8b5cf6", "order": 1, "createdAt": "2026-01-29T08:16:00.000Z" },
-  { "id": "list_clawdbot", "name": "Clawdbot", "type": "work", "icon": "🤖", "color": "#6366f1", "order": 2, "createdAt": "2026-01-29T08:16:00.000Z" },
+  { "id": "list_clawdbot", "name": "HenryII", "type": "work", "icon": "🦝", "color": "#6366f1", "order": 2, "createdAt": "2026-01-29T08:16:00.000Z" },
   { "id": "list_projects", "name": "Projects", "type": "work", "icon": "🚀", "color": "#a855f7", "order": 3, "createdAt": "2026-01-29T08:16:00.000Z" },
   { "id": "list_taxes", "name": "Taxes", "type": "personal", "icon": "📋", "color": "#ef4444", "order": 0, "createdAt": "2026-01-29T08:16:00.000Z" },
   { "id": "list_health", "name": "Health", "type": "personal", "icon": "❤️", "color": "#ec4899", "order": 1, "createdAt": "2026-01-29T08:16:00.000Z" },
