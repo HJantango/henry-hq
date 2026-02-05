@@ -82,10 +82,10 @@ export default function DailyPicks() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
-          <span className="text-xl">🦉</span>
+          <span className="text-xl">🦝</span>
           <div>
-            <h3 className="text-sm font-semibold text-white tracking-tight">Henry&apos;s Daily Picks</h3>
-            <p className="text-xs text-dark-400 mt-0.5">Fresh inspiration for today</p>
+            <h3 className="text-sm font-semibold text-white tracking-tight">HenryII&apos;s Daily Picks</h3>
+            <p className="text-xs text-dark-400 mt-0.5">Curated chaos for today</p>
           </div>
         </div>
         <button

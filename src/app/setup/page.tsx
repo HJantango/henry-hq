@@ -170,7 +170,7 @@ const CHECKLIST: ChecklistItem[] = [
     id: "whatsapp-selfchat",
     category: "WhatsApp",
     title: "Enable Self-Chat Mode",
-    description: "Talk to Henry in your own WhatsApp 'Notes' chat",
+    description: "Talk to HenryIIII in your own WhatsApp 'Notes' chat",
     difficulty: "easy",
     timeEstimate: "5 min",
     details: [
@@ -217,7 +217,7 @@ const CHECKLIST: ChecklistItem[] = [
     id: "session-memory",
     category: "Memory & Intelligence",
     title: "Enable Session Memory",
-    description: "Allow Henry to search past conversations",
+    description: "Allow HenryII to search past conversations",
     difficulty: "easy",
     timeEstimate: "5 min",
     details: [
@@ -301,8 +301,8 @@ const CHECKLIST: ChecklistItem[] = [
   // HenryHQ
   {
     id: "henryhq-clone",
-    category: "Henry HQ Dashboard",
-    title: "Clone Henry HQ",
+    category: "HenryII HQ Dashboard",
+    title: "Clone HenryII HQ",
     description: "Get the personal dashboard codebase",
     difficulty: "easy",
     timeEstimate: "5 min",
@@ -315,7 +315,7 @@ const CHECKLIST: ChecklistItem[] = [
   },
   {
     id: "henryhq-deploy",
-    category: "Henry HQ Dashboard",
+    category: "HenryII HQ Dashboard",
     title: "Deploy to Railway",
     description: "Get your dashboard live on the web",
     difficulty: "medium",
@@ -329,7 +329,7 @@ const CHECKLIST: ChecklistItem[] = [
   },
   {
     id: "henryhq-customize",
-    category: "Henry HQ Dashboard",
+    category: "HenryII HQ Dashboard",
     title: "Customize Your Dashboard",
     description: "Make it yours — change name, colors, features",
     difficulty: "easy",
@@ -353,7 +353,7 @@ const CHECKLIST: ChecklistItem[] = [
     details: [
       "Set heartbeat.every in clawdbot.json (e.g., '30m')",
       "Create HEARTBEAT.md with check instructions",
-      "Henry will check in periodically and do background work",
+      "HenryII will check in periodically and do background work",
     ],
   },
   {
@@ -364,7 +364,7 @@ const CHECKLIST: ChecklistItem[] = [
     difficulty: "easy",
     timeEstimate: "5 min",
     details: [
-      "Ask Henry to set a reminder via chat",
+      "Ask HenryII to set a reminder via chat",
       "Or use: clawdbot cron add 'Reminder text' --at '9am'",
       "Supports: daily, weekly, specific times",
     ],
@@ -373,12 +373,12 @@ const CHECKLIST: ChecklistItem[] = [
     id: "subagents",
     category: "Advanced",
     title: "Enable Sub-Agents",
-    description: "Let Henry spawn background workers for long tasks",
+    description: "Let HenryII spawn background workers for long tasks",
     difficulty: "easy",
     timeEstimate: "5 min",
     details: [
       "Set agents.defaults.subagents.maxConcurrent: 8",
-      "Henry can spin up workers for deployments, research, etc.",
+      "HenryII can spin up workers for deployments, research, etc.",
       "Workers report back when done",
     ],
   },
@@ -391,7 +391,7 @@ const CATEGORIES = [
   "Memory & Intelligence",
   "Voice",
   "Integrations",
-  "Henry HQ Dashboard",
+  "HenryII HQ Dashboard",
   "Advanced",
 ];
 
@@ -470,7 +470,7 @@ export default function SetupGuidePage() {
   if (!mounted) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
-        <div className="text-5xl animate-pulse">🦉</div>
+        <div className="text-5xl animate-pulse">🦝</div>
       </div>
     );
   }
@@ -483,7 +483,7 @@ export default function SetupGuidePage() {
           🛠️ Clawdbot Setup Guide
         </h1>
         <p className="text-dark-300">
-          Help friends set up their own Henry. Track progress for each person.
+          Help friends set up their own HenryII. Track progress for each person.
         </p>
       </div>
 
@@ -658,7 +658,7 @@ export default function SetupGuidePage() {
             Select a friend or add a new one to track their setup progress
           </p>
           <p className="text-dark-400">
-            The checklist covers everything from VPS setup to full Henry HQ deployment
+            The checklist covers everything from VPS setup to full HenryII HQ deployment
           </p>
         </div>
       )}

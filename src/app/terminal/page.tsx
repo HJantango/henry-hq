@@ -8,13 +8,13 @@ export default function TerminalPage() {
     {
       id: "sys_1",
       type: "system",
-      content: "Henry Terminal v2.0 — Connected to Clawdbot 🦉",
+      content: "HenryII Terminal v1.0 — Connected to Clawdbot 🦝",
       timestamp: new Date().toISOString(),
     },
     {
       id: "sys_2",
       type: "system",
-      content: "Type a message to talk to Henry. Local commands: help, clear, status, whoami, projects",
+      content: "Type a message to talk to HenryII. Local commands: help, clear, status, whoami, projects",
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -77,12 +77,12 @@ export default function TerminalPage() {
           type: "output",
           content: `Local commands:
   help     — Show this help message
-  status   — Check Henry's connection status
+  status   — Check HenryII's connection status
   whoami   — Display user info
   projects — List active projects
   clear    — Clear terminal
   
-Anything else is sent directly to Henry via Clawdbot gateway.
+Anything else is sent directly to HenryIIII via Clawdbot gateway.
 Henry has full context of your workspace, projects, and tools.`,
           timestamp: new Date().toISOString(),
         });
@@ -124,7 +124,7 @@ Henry has full context of your workspace, projects, and tools.`,
           content: `👤 Heath — Wild Octave
    Role: Founder
    Location: Brunswick Heads, NSW
-   Dashboard: Henry HQ
+   Dashboard: HenryII HQ
    Status: Building cool things with AI`,
           timestamp: new Date().toISOString(),
         });
@@ -251,7 +251,7 @@ Henry has full context of your workspace, projects, and tools.`,
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex items-center gap-2 pl-8 animate-fade-in">
-            <span className="text-accent/60 text-xs">🦉 henry is thinking</span>
+            <span className="text-accent/60 text-xs">🦝 henry is thinking</span>
             <span className="flex gap-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-accent/60 animate-pulse" style={{ animationDelay: "0ms" }} />
               <span className="w-1.5 h-1.5 rounded-full bg-accent/60 animate-pulse" style={{ animationDelay: "150ms" }} />

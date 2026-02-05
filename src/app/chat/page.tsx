@@ -138,7 +138,7 @@ export default function ChatPage() {
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="text-4xl mb-3 animate-pulse">🦉</div>
+              <div className="text-4xl mb-3 animate-pulse">🦝</div>
               <p className="text-dark-400 text-sm">Loading chat history...</p>
             </div>
           </div>
@@ -188,7 +188,7 @@ export default function ChatPage() {
                   <div className={`max-w-[80%] ${isUser ? "order-1" : ""}`}>
                     {/* Sender label */}
                     <div className={`flex items-center gap-2 mb-1 ${isUser ? "justify-end" : ""}`}>
-                      {!isUser && <span className="text-xs font-medium text-accent-light">🦉 Henry</span>}
+                      {!isUser && <span className="text-xs font-medium text-accent-light">🦝 HenryII</span>}
                       {isUser && <span className="text-xs font-medium text-dark-300">Heath</span>}
                       {time && <span className="text-xs text-dark-500">{time}</span>}
                     </div>

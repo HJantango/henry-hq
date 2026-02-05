@@ -3,9 +3,9 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
-  title: "Henry HQ — Personal Command Center",
-  description: "Heath's personal dashboard powered by Henry 🦉",
-  icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦉</text></svg>" },
+  title: "HenryII HQ — Chaotic Co-Pilot Command Center",
+  description: "Heath's personal dashboard powered by HenryII 🦝",
+  icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦝</text></svg>" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
