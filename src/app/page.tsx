@@ -29,12 +29,23 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
+  // Fun loading messages
+  const loadingMessages = [
+    "Rummaging through your data...",
+    "Washing your tasks in a stream...",
+    "Checking all the garbage cans...",
+    "Loading HenryII HQ...",
+    "Preparing for chaos...",
+    "Sharpening tiny raccoon claws...",
+  ];
+  const loadingMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+
   if (!mounted) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
         <div className="text-center animate-fade-in">
-          <div className="text-5xl mb-4">🦝</div>
-          <p className="text-dark-300 text-sm">Loading HenryII HQ...</p>
+          <div className="text-5xl mb-4 animate-bounce">🦝</div>
+          <p className="text-dark-300 text-sm">{loadingMessage}</p>
         </div>
       </div>
     );

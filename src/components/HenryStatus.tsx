@@ -10,9 +10,25 @@ interface GatewayStatus {
   gatewayUrl?: string;
 }
 
+// Raccoon sayings for when you click on him 🦝
+const raccoonSayings = [
+  "🦝 *rummages through your tasks*",
+  "🦝 Found any good garbage lately?",
+  "🦝 I'm nocturnal, you know...",
+  "🦝 *washes data in a stream*",
+  "🦝 Chaos is just undiscovered order",
+  "🦝 Your calendar looks delicious",
+  "🦝 *tips tiny raccoon fedora*",
+  "🦝 I've been through your files. Impressive.",
+  "🦝 Need help? I know a guy. It's me.",
+  "🦝 *suspicious raccoon noises*",
+];
+
 export default function HenryStatus() {
   const [gateway, setGateway] = useState<GatewayStatus | null>(null);
   const [checking, setChecking] = useState(true);
+  const [clickCount, setClickCount] = useState(0);
+  const [saying, setSaying] = useState<string | null>(null);
 
   const checkStatus = async () => {
     try {
@@ -43,6 +59,13 @@ export default function HenryStatus() {
   const state = checking ? "checking" : isOnline ? "online" : "offline";
   const config = statusConfig[state];
 
+  const handleRaccoonClick = () => {
+    setClickCount((c) => c + 1);
+    const randomSaying = raccoonSayings[Math.floor(Math.random() * raccoonSayings.length)];
+    setSaying(randomSaying);
+    setTimeout(() => setSaying(null), 3000);
+  };
+
   return (
     <div
       className="glass-hover p-5 animate-slide-up"
@@ -53,9 +76,13 @@ export default function HenryStatus() {
       </p>
       <div className="flex items-center gap-3">
         <div className="relative">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-blue-700 flex items-center justify-center text-lg">
+          <button
+            onClick={handleRaccoonClick}
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-blue-700 flex items-center justify-center text-lg hover:scale-110 active:scale-95 transition-transform cursor-pointer"
+            title="Click me!"
+          >
             🦝
-          </div>
+          </button>
           <div
             className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ${config.color} border-2 border-dark-800 ${config.glow} shadow-lg`}
           />
@@ -68,6 +95,13 @@ export default function HenryStatus() {
           </div>
         </div>
       </div>
+
+      {/* Raccoon saying */}
+      {saying && (
+        <div className="mt-3 p-2 bg-accent/10 border border-accent/20 rounded-lg animate-fade-in">
+          <p className="text-xs text-accent-light italic">{saying}</p>
+        </div>
+      )}
 
       {/* Details */}
       {!checking && (
