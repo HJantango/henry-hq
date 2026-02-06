@@ -27,7 +27,7 @@ const raccoonSayings = [
 export default function HenryStatus() {
   const [gateway, setGateway] = useState<GatewayStatus | null>(null);
   const [checking, setChecking] = useState(true);
-  const [clickCount, setClickCount] = useState(0);
+  const [_clickCount, setClickCount] = useState(0);
   const [saying, setSaying] = useState<string | null>(null);
 
   const checkStatus = async () => {

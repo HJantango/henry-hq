@@ -94,7 +94,7 @@ export default function MorningBriefPage() {
   const getPantsOrShorts = () => {
     if (!weather) return null;
     const { high, low } = weather;
-    const midDay = (high + low) / 2;
+    const _midDay = (high + low) / 2; // Reserved for future use
     
     // Simple logic based on high/low
     if (high < 20) {
